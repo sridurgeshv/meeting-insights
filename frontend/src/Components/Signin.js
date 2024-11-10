@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import './index.css';
+import { useAuth } from '../contexts/AuthContext';
 
 function SignIn() {
   const { signInWithGoogle } = useAuth();
@@ -17,7 +16,7 @@ function SignIn() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-hs-screen">
       <div className="bg-white">
         <h2>SyncWise</h2>
         <button onClick={handleSignIn}>

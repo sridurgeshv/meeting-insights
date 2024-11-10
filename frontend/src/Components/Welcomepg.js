@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './index.css';
+import '../globals/styles.css';
 
 function Welcome() {
   const navigate = useNavigate();
@@ -8,7 +8,6 @@ function Welcome() {
   return (
     <div className="min-h-screen">
       <h1>InsightSync</h1>
-      <p>Transform your meetings into actionable insights with real-time summaries and intelligent categorization, empowering teams to make informed decisions effortlessly.</p>
       
       <button className="start-button"
       onClick={() => navigate('/signin')}>Unlock Now</button>
@@ -23,7 +22,7 @@ function Welcome() {
         </div>
         <div className="mock-editor">
           <p>Welcome to InsightSync</p>
-          <p>Adaptive Meeting Intelligence()</p>
+          <p>Transform your meetings into actionable insights with real-time summaries and intelligent categorization, empowering teams to make informed decisions effortlessly.</p>
         </div>
       </div>
        {/* Footer */}

@@ -1,7 +1,30 @@
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { io } from 'socket.io-client'; 
+import '../globals/styles.css';
+
+const Card = ({ children }) => (
+  <div className="border rounded shadow p-4 bg-white">{children}</div>
+);
+
+const CardHeader = ({ children }) => (
+  <div className="border-b pb-2 mb-2">{children}</div>
+);
+
+const CardTitle = ({ children }) => (
+  <h2 className="text-lg font-semibold">{children}</h2>
+);
+
+const CardContent = ({ children }) => (
+  <div className="mt-2">{children}</div>
+);
+
+const socket = io('http://localhost:5000'); 
 
 const Dashboard = () => {
+  const { user,setUser,logout } = useAuth();
+  const navigate = useNavigate();
   const [meetingData, setMeetingData] = useState({
     title: '',
     type: '',
@@ -11,8 +34,48 @@ const Dashboard = () => {
     questions: []
   });
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to log out:', error);
+    }
+  };
+
   return (
-    <div className="p-4">
+    <div className="container">
+      {/* Sidebar */}
+      <div className="sidebar">
+        <div className="sidebar-top">
+          <div className="user-greeting">
+            <div className="greeting-top">
+              <img
+                src={user?.photoURL}
+                alt="Profile"
+              />
+              <span className="hi-text">Hi,</span>
+            </div>
+              <span className="username">{user?.displayName?.split(' ').slice(0, 2).join(' ')}</span>
+          </div>
+          
+          <nav className="menu">
+            <ul>
+              <li onClick={() => navigate('/dashboard')}>Dashboard</li>
+              <li onClick={() => navigate('/projects')}>Sessions</li>
+              <li onClick={() => navigate('/teams')}>Users</li>
+              <li onClick={() => navigate('/settings')}>Settings</li>
+            </ul>
+          </nav>
+        </div>
+        <div className="logout-container">
+          <button className="logout-button" onClick={handleLogout}>
+            Sign Out
+          </button>
+        </div>
+      </div>
+
+        <div className="p-4">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
@@ -55,10 +118,12 @@ const Dashboard = () => {
               ))}
             </ul>
           </CardContent>
-        </Card>
+        </Card>        
       </div>
     </div>
-  );
-};
+  </div> 
+);
+}
+
 
 export default Dashboard;
