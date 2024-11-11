@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import './index.css';
+import '../globals/styles.css';
 
 const Card = ({ id, language, title, timeAgo, onClick, onDelete }) => {
   const [isHovered, setIsHovered] = useState(false);

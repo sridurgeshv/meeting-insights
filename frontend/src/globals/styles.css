@@ -10,7 +10,7 @@ body {
   .min-h-screen {
     display: flex;
     flex-direction: column;
-    min-height: 85vh;
+    min-height: 100vh;
     background: linear-gradient(145deg, #2a0845, #6441a5);
     color: white;
     position: relative;
@@ -368,7 +368,7 @@ body {
     margin-bottom: 20px;
   }
   
-  .header h1 {
+  .header .CardTitle {
     font-size: 62px;
     font-weight: bold;
   }
@@ -518,7 +518,55 @@ body {
     color: #333;
   }
 
+   /*              Card CSS                 */
+   .card {
+    width: 300px;
+    height: 200px;
+    border-radius: 10px;
+    border: 1px solid rgb(37, 128, 174);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: white;
+    text-align: center;
+    overflow: hidden;
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 12px 15px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #353638;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  .card-body {
+    padding: 36px 15px;
+  }
+  
+  .card-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
+  .card-footer {
+    background-color: #f8f9fa;
+    padding: 10px 15px;
+    font-size: 18px;
+    color: #6c757d;
+    border-top: 1px solid #e9ecef;
+  }
 
+  .delete-icon {
+    cursor: pointer;
+  }
+  
+  .delete-icon:hover {
+    color: red;
+  } 
 
 
 
