@@ -1,28 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import CreatSession from '../pages/createsession';
 import Card from './Card';
 import { io } from 'socket.io-client'; 
 import axios from 'axios';
 import '../globals/styles.css';
 
-const socket = io('http://localhost:5000'); 
+const socket = io(process.env.REACT_APP_SOCKET_URL);
 
 const Dashboard = () => {
-  const { user,setUser,logout } = useAuth();
+  const { user, setUser, logout } = useAuth();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [collaborations, setCollaborations] = useState([]);
-  const [meetingData, setMeetingData] = useState({
-    title: '',
-    type: '',
-    summary: '',
-    actionItems: [],
-    decisions: [],
-    questions: []
-  });
 
   useEffect(() => {
     if (user) {
@@ -69,8 +59,8 @@ const Dashboard = () => {
     }
   };
 
-  const handleCardClick = (sessionsId) => {
-    navigate(`/session/${sessionsId}`);
+  const handleCardClick = (sessionId) => {
+    navigate(`/session/${sessionId}`);
   };
 
   const handleDeleteSession = (sessionsId) => {
@@ -86,6 +76,20 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Failed to log out:', error);
     }
+  };
+
+  const handleCreateSession = () => {
+    // Create a new session
+    const newSession = {
+      id: Date.now().toString(),
+      title: 'New Session',
+      language: 'en',
+      lastEdited: new Date().toISOString(),
+    };
+
+    setSessions([...sessions, newSession]);
+    localStorage.setItem('savedSession', JSON.stringify([...sessions, newSession]));
+    navigate(`/session/${newSession.id}`);
   };
 
   return (
@@ -132,29 +136,29 @@ const Dashboard = () => {
           <div className="sessions-header">
             <h2>Sessions</h2>
             <button 
-            className="add-button" 
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            +
-          </button>
-          </div>     
+              className="add-button" 
+              onClick={handleCreateSession}
+            >
+              +
+            </button>
+          </div>       
           <div className="divider"></div>        
           {sessions.length === 0 ? (
             <div className="empty-state">
-              <p>Projects haven't been assigned</p>
+              <p>No sessions yet</p>
             </div>
           ) : (
             <div className="sessions-grid">
-              {sessions.map((project) => (
+              {sessions.map((session) => (
                  <Card
-                 key={project.id}
-                 id={project.id}
-                 language={project.language}
-                 title={project.title}
-                 timeAgo={getTimeAgo(project.lastEdited)}
-                 onClick={() => handleCardClick(project.id)}
-                 onDelete={handleDeleteSession}
-               />
+                   key={session.id}
+                   id={session.id}
+                   language={session.language}
+                   title={session.title}
+                   timeAgo={getTimeAgo(session.lastEdited)}
+                   onClick={() => handleCardClick(session.id)}
+                   onDelete={handleDeleteSession}
+                 />
               ))}
             </div>
           )}
