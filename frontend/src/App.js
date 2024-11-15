@@ -1,10 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import Welcome from './components/Welcomepg';
-import SignIn from './components/Signin';
-import Dashboard from './components/Dashboard';
-// import Project from './components/Project';
+import Welcome from './Components/Welcomepg';
+import SignIn from './Components/Signin';
+import Dashboard from './Components/Dashboard';
+import Session from './pages/Session';
 // import Settings from './pages/Settings';
 import { useAuth } from './contexts/AuthContext';
 /* import ProjectList from './pages/ProjectPage';
@@ -28,6 +28,7 @@ function App() {
                 <Dashboard />
             }
           />
+          <Route path='/session' element={<Session/>} />
         </Routes>
       </Router>
     </AuthProvider>
