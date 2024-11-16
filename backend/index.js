@@ -173,7 +173,7 @@ app.post('/api/transcribe-video', upload.single('video'), async (req, res) => {
     const genAI = new GoogleGenerativeAI(process.env.API_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
     const result = await model.generateContent([
-      'Generate a Summarized transcript of the audio of not more than 100 words in well formatted form also include - type of meeting, then action items like if anything user needs to be aware of , questions related to it and then key decisions in markdown format ',
+      'Generate a summarized transcript of the audio, limited to 450 words. Ensure it is well-formatted, professional, accurate, and easily understandable for users.',
       {
         fileData: {
           fileUri: uploadResult.file.uri,
