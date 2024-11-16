@@ -18,7 +18,7 @@ function SignIn() {
   return (
     <div className="min-hs-screen">
       <div className="bg-white">
-        <h2>SyncWise</h2>
+        <h2>InsightSync</h2>
         <button onClick={handleSignIn}>
           <img
             src="https://cdn.cdnlogo.com/logos/g/35/google-icon.svg"

@@ -79,16 +79,18 @@ const Dashboard = () => {
   };
 
   const handleCreateSession = () => {
-    // Create a new session
     const newSession = {
       id: Date.now().toString(),
       title: 'New Session',
       language: 'en',
       lastEdited: new Date().toISOString(),
     };
-
-    setSessions([...sessions, newSession]);
-    localStorage.setItem('savedSession', JSON.stringify([...sessions, newSession]));
+  
+    const savedSessions = JSON.parse(localStorage.getItem('savedSession')) || [];
+    const updatedSessions = [...savedSessions, newSession];
+    
+    setSessions(updatedSessions);
+    localStorage.setItem('savedSession', JSON.stringify(updatedSessions));
     navigate(`/session/${newSession.id}`);
   };
 

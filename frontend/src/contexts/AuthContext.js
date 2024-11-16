@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
           photoURL: user.photoURL,
         };
         // Send user data to the backend
-        await axios.post('http://localhost:5000/api/save-user', userData);
+        await axios.post(`${process.env.REACT_APP_API_URL}/api/save-user`, userData);
         setUser(userData);
       } else {
         setUser(null);
@@ -53,7 +53,7 @@ export function AuthProvider({ children }) {
       await updateProfile(auth.currentUser, updatedData);
       
       // Update backend
-      const response = await axios.post('http://localhost:5000/api/update-user', {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/update-user`, {
         uid: user.uid,
         ...updatedData
       });

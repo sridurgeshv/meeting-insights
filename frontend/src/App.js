@@ -1,14 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import Welcome from './components/Welcomepg';
-import SignIn from './components/Signin';
-import Dashboard from './components/Dashboard';
-// import Project from './components/Project';
-// import Settings from './pages/Settings';
+import Welcome from './Components/Welcomepg';
+import SignIn from './Components/Signin';
+import Dashboard from './Components/Dashboard';
+import Session from './pages/session';
 import { useAuth } from './contexts/AuthContext';
-/* import ProjectList from './pages/ProjectPage';
-import TeamsPage from './pages/TeamsPage'; */
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -22,12 +19,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Welcome />} />
           <Route path="/signin" element={<SignIn />} />
-          <Route
-            path="/dashboard"
-            element={             
-                <Dashboard />
-            }
-          />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/session/:sessionId" element={<Session />} />
         </Routes>
       </Router>
     </AuthProvider>
