@@ -4,12 +4,18 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./src/config/db');
+const { GoogleAIFileManager, FileState } = require('@google/generative-ai/server');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const multer = require('multer');
+const ffmpeg = require('fluent-ffmpeg');
+const fs = require('fs');
+const path = require('path');
 const {Groq} = require("groq-sdk");
 const { v4: uuidv4 } = require('uuid');
 const mongoose = require('mongoose')
 dotenv.config();
 const app = express();
-const groq = new Groq({ apiKey: process.env.Gorq_API_KEY });
+
 
 // Enable CORS for the Express app
 app.use(cors({
@@ -20,6 +26,9 @@ app.use(cors({
 
 app.use(express.json());
 const server = http.createServer(app);
+
+// Configure multer for file uploads
+const upload = multer({ dest: 'uploads/' });
 
 // Basic health check route
 app.get('/api/health', (req, res) => {
@@ -124,17 +133,69 @@ app.post('/api/update-user', async (req, res) => {
   }
 });
 
+// Transcription route for video files
+app.post('/api/transcribe-video', upload.single('video'), async (req, res) => {
+  try {
+    const videoPath = req.file.path;
+    const audioPath = `${videoPath}.mp3`;
+
+    // Step 1: Extract audio from the video file using FFmpeg
+    await new Promise((resolve, reject) => {
+      ffmpeg(videoPath)
+        .output(audioPath)
+        .on('end', resolve)
+        .on('error', reject)
+        .run();
+    });
+
+    // Step 2: Initialize the Google File Manager with API key
+    const fileManager = new GoogleAIFileManager(process.env.API_KEY);
+
+    // Step 3: Upload the extracted audio file to Google API
+    const uploadResult = await fileManager.uploadFile(audioPath, {
+      mimeType: 'audio/mp3',
+      displayName: 'Extracted Audio',
+    });
+
+    // Step 4: Check the file processing status
+    let file = await fileManager.getFile(uploadResult.file.name);
+    while (file.state === FileState.PROCESSING) {
+      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+      file = await fileManager.getFile(uploadResult.file.name);
+    }
+
+    // Step 5: Handle any errors if processing failed
+    if (file.state === FileState.FAILED) {
+      return res.status(500).json({ error: 'Audio processing failed.' });
+    }
+
+    // Step 6: Generate a response using the Generative AI model
+    const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    const result = await model.generateContent([
+      'Generate a Summarized transcript of the audio of not more than 100 words in well formatted form also include - type of meeting, then action items like if anything user needs to be aware of , questions related to it and then key decisions in markdown format ',
+      {
+        fileData: {
+          fileUri: uploadResult.file.uri,
+          mimeType: uploadResult.file.mimeType,
+        },
+      },
+    ]);
+
+    // Step 7: Clean up temporary files (optional)
+    fs.unlinkSync(videoPath);
+    fs.unlinkSync(audioPath);
+
+    // Step 8: Send the transcription result
+    res.json({ transcription: result.response.text() });
+  } catch (error) {
+    console.error('Error during transcription:', error);
+    res.status(500).json({ error: 'An error occurred during transcription.' });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`CORS enabled for origin: ${process.env.CLIENT_URL || 'http://localhost:3000'}`);
-});
-
-// Error handling for uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-});
-
-process.on('unhandledRejection', (error) => {
-  console.error('Unhandled Rejection:', error);
+  connectDB();
 });
