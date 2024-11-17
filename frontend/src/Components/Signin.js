@@ -8,12 +8,15 @@ function SignIn() {
 
   const handleSignIn = async () => {
     try {
-      await signInWithGoogle();
-      navigate('/dashboard');
+      const result = await signInWithGoogle();
+      if (result) {
+        navigate('/dashboard');
+      }
     } catch (error) {
       console.error('Sign in error:', error);
     }
   };
+
 
   return (
     <div className="min-hs-screen">

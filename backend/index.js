@@ -10,22 +10,116 @@ const multer = require('multer');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const path = require('path');
-const {Groq} = require("groq-sdk");
+const Groq = require('groq-sdk');
 const { v4: uuidv4 } = require('uuid');
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+const admin = require('firebase-admin');
 dotenv.config();
+
+// Convert Firebase private key from base64
+const decodedPrivateKey = Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii');
+
+// Initialize Firebase Admin with proper PEM key
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: decodedPrivateKey
+  })
+});
+
+// Initialize Express app
 const app = express();
 
-
-// Enable CORS for the Express app
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  methods: ['GET', 'POST'],
-  credentials: true
+// Then configure session with MongoStore
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    collectionName: 'sessions', // Optional: specify collection name
+    ttl: 24 * 60 * 60, // Session TTL (1 day)
+    autoRemove: 'native', // Enable automatic removal of expired sessions
+    crypto: {
+      secret: process.env.SESSION_SECRET // Optional: for encrypted sessions
+    }
+  }),
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 24 // 24 hours
+  }
 }));
 
-app.use(express.json());
+// CORS middleware
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Auth middleware
+const authenticateUser = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split('Bearer ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+// Protected routes
+app.options('*', cors());
+app.use('/api/save-user', authenticateUser);
+app.use('/api/update-user', authenticateUser);
+app.use('/api/get-collaborations', authenticateUser);
+app.use('/api/transcribe-video', authenticateUser);
+app.use('/api/extract-field', authenticateUser);
+
+// Create HTTP server
 const server = http.createServer(app);
+
+// Socket.io setup with authentication
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
+
+// Socket.IO authentication middleware
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+      throw new Error('No token provided');
+    }
+    
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    socket.user = decodedToken;
+    next();
+  } catch (error) {
+    next(new Error('Authentication error'));
+  }
+});
+
+app.use(express.json());
+
+// Initialize Groq SDK
+const groq = new Groq({
+  apiKey: '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', // Replace with your Groq API key
+});
 
 // Configure multer for file uploads
 const upload = multer({ dest: 'uploads/' });
@@ -35,10 +129,13 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// First establish the MongoDB connection
+mongoose.connect(process.env.MONGO_URI, { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true 
+})
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.error('MongoDB connection error:', err));
 
 // User schema and model
 const userSchema = new mongoose.Schema({
@@ -63,18 +160,17 @@ const collaborationSchema = new mongoose.Schema({
 const Collaboration = mongoose.model('Collaboration', collaborationSchema);
 
 // Endpoint to save user data
-app.post('/api/save-user', async (req, res) => {
-  const { uid, email, displayName, photoURL } = req.body;
-
+app.post('/api/save-user', authenticateUser, async (req, res) => {
   try {
-    let user = await User.findOne({ uid });
-    if (!user) {
-      user = new User({ uid, email, displayName, photoURL });
-      await user.save();
-    }
+    const userData = req.body;
+    await User.findOneAndUpdate(
+      { uid: userData.uid }, 
+      userData,
+      { upsert: true, new: true }
+    );
     res.status(200).json({ message: 'User saved successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error saving user', error });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -173,7 +269,7 @@ app.post('/api/transcribe-video', upload.single('video'), async (req, res) => {
     const genAI = new GoogleGenerativeAI(process.env.API_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
     const result = await model.generateContent([
-      'Generate a summarized transcript of the audio, limited to 450 words. Ensure it is well-formatted, professional, accurate, and easily understandable for users.',
+      'Generate a summarized transcript of the audio, limited to 250 words. Ensure it is well-formatted, professional, accurate, and easily understandable for users.',
       {
         fileData: {
           fileUri: uploadResult.file.uri,
@@ -194,8 +290,44 @@ app.post('/api/transcribe-video', upload.single('video'), async (req, res) => {
   }
 });
 
+app.post('/api/extract-field', async (req, res) => {
+  const { transcription, field } = req.body;
+
+  try {
+    // Prepare the Groq prompt message
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are an assistant tasked with extracting specific information from meeting transcriptions.',
+      },
+      {
+        role: 'user',
+        content: `Extract the ${field} from the following meeting transcription: ${transcription}`,
+      },
+    ];
+
+    // Call Groq's chat completion API
+    const chatCompletion = await groq.chat.completions.create({
+      messages,
+      model: 'llama3-8b-8192', // Specify the model
+      temperature: 0.7,
+      max_tokens: 8192,
+      top_p: 1,
+      stop: null,
+    });
+
+    // Extract and send the result
+    const result = chatCompletion.choices[0]?.message?.content.trim();
+    res.json({ result });
+  } catch (error) {
+    console.error('Error extracting field:', error);
+    res.status(500).json({ error: 'Failed to process the request.' });
+  }
+});
+
+// Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   connectDB();
 });
