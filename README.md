@@ -11,18 +11,10 @@ cd backend
 npm run dev
 ```
 
-Next Steps to Work On
+Works to finish :
 
-For Phase 2, you'll need to:
+1. UI Correction
 
-Implement the speech-to-text functionality
-Create the meeting type detection system
-Develop the summarization pipeline
+2. Text-to-Image part
 
-Would you like me to provide the implementation details for any of these Phase 2 components next?
-Key things to note:
-
-The frontend is using shadcn/ui components for a clean, modern look
-The backend is set up with Express.js and MongoDB
-We've created a basic dashboard layout that will be enhanced with real-time data
-The project is structured for scalability and maintainability
+3. New Features
