@@ -51,9 +51,23 @@ export function AuthProvider({ children }) {
   const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      return result.user;
+      const user = result.user;
+      
+      // Send user data to backend
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/save-user`, {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      }, {
+        headers: {
+          'Authorization': `Bearer ${await user.getIdToken()}`
+        }
+      });
+  
+      return user;
     } catch (error) {
-      console.error('Google sign in error:', error);
+      console.error('Google Sign-In Error:', error);
       throw error;
     }
   };

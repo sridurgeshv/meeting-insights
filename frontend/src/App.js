@@ -10,7 +10,7 @@ function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>; 
   }
   
   return user ? children : <Navigate to="/signin" />;
@@ -26,7 +26,9 @@ function App() {
           <Route 
             path="/dashboard" 
             element={
+              <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
             } 
           />
           <Route 
