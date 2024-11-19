@@ -3,7 +3,6 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const connectDB = require('./src/config/db');
 const { GoogleAIFileManager, FileState } = require('@google/generative-ai/server');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const multer = require('multer');
@@ -11,10 +10,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const path = require('path');
 const Groq = require('groq-sdk');
-const { v4: uuidv4 } = require('uuid');
-const mongoose = require('mongoose');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
 const admin = require('firebase-admin');
 dotenv.config();
 
@@ -33,29 +29,9 @@ admin.initializeApp({
 // Initialize Express app
 const app = express();
 
-// Then configure session with MongoStore
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URI,
-    collectionName: 'sessions', // Optional: specify collection name
-    ttl: 24 * 60 * 60, // Session TTL (1 day)
-    autoRemove: 'native', // Enable automatic removal of expired sessions
-    crypto: {
-      secret: process.env.SESSION_SECRET // Optional: for encrypted sessions
-    }
-  }),
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 1000 * 60 * 60 * 24 // 24 hours
-  }
-}));
-
 // CORS middleware
 app.use(cors({
-  origin: true,
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -118,7 +94,7 @@ app.use(express.json());
 
 // Initialize Groq SDK
 const groq = new Groq({
-  apiKey: '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', // Replace with your Groq API key
+  apiKey: process.env.GROQ_API_KEY,
 });
 
 // Configure multer for file uploads
@@ -129,45 +105,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// First establish the MongoDB connection
-mongoose.connect(process.env.MONGO_URI, { 
-  useNewUrlParser: true, 
-  useUnifiedTopology: true 
-})
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
-
-// User schema and model
-const userSchema = new mongoose.Schema({
-  uid: String,
-  email: String,
-  displayName: String,
-  photoURL: String,
-});
-
-const User = mongoose.model('User', userSchema);
-
-// Define Collaboration schema and model
-const collaborationSchema = new mongoose.Schema({
-  id: { type: String, default: uuidv4 },
-  userId: String,
-  collaboratorId: String,
-  projectId: String,
-  projectTitle: String,
-  createdAt: { type: Date, default: Date.now }
-});
-
-const Collaboration = mongoose.model('Collaboration', collaborationSchema);
-
 // Endpoint to save user data
 app.post('/api/save-user', authenticateUser, async (req, res) => {
   try {
-    const userData = req.body;
-    await User.findOneAndUpdate(
-      { uid: userData.uid }, 
-      userData,
-      { upsert: true, new: true }
-    );
+    // Placeholder for user saving logic without MongoDB
     res.status(200).json({ message: 'User saved successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -175,60 +116,29 @@ app.post('/api/save-user', authenticateUser, async (req, res) => {
 });
 
 // Endpoint to get collaborations for a user
-app.get('/api/get-collaborations/:userId', async (req, res) => {
+app.get('/api/get-collaborations', authenticateUser, async (req, res) => {
   try {
-  const collaborations = await db.all(
-  'SELECT DISTINCT collaboratorId, projectId, projectTitle, MAX(createdAt) as createdAt FROM collaborations WHERE userId = ? GROUP BY collaboratorId ORDER BY createdAt DESC LIMIT 5',
-  req.params.userId
-  );
-  
-  const collaboratorIds = collaborations.map(c => c.collaboratorId);
-  const collaborators = await User.find({ uid: { $in: collaboratorIds } });
-  
-  const result = collaborations.map(c => {
-  const collaborator = collaborators.find(user => user.uid === c.collaboratorId);
-  return {
-  id: c.projectId,
-  projectTitle: c.projectTitle,
-  createdAt: c.createdAt,
-  collaborator: {
-  uid: collaborator.uid,
-  displayName: collaborator.displayName,
-  photoURL: collaborator.photoURL
-  }
-  };
-  });
-  
-  res.json(result);
+    // Placeholder for collaborations retrieval without MongoDB
+    res.json([]);
   } catch (error) {
-  res.status(500).json({ message: 'Error fetching collaborations', error: error.message });
+    res.status(500).json({ message: 'Error fetching collaborations', error: error.message });
   }
-  });
+});
 
-  // Endpoint to update user information
-app.post('/api/update-user', async (req, res) => {
+// Endpoint to update user information
+app.post('/api/update-user', authenticateUser, async (req, res) => {
   const { uid, displayName, photoURL } = req.body;
 
   try {
-    const user = await User.findOneAndUpdate(
-      { uid },
-      { displayName, photoURL },
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Emit a socket event to notify clients of the user update
+    // Placeholder for user update logic without MongoDB
     io.emit('user-update', { uid, displayName, photoURL });
-
-    res.status(200).json({ message: 'User updated successfully', user });
+    res.status(200).json({ message: 'User updated successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error updating user', error });
   }
 });
 
+// Transcription route for video files
 // Transcription route for video files
 app.post('/api/transcribe-video', upload.single('video'), async (req, res) => {
   try {
@@ -309,7 +219,7 @@ app.post('/api/extract-field', async (req, res) => {
     // Call Groq's chat completion API
     const chatCompletion = await groq.chat.completions.create({
       messages,
-      model: 'llama3-8b-8192', // Specify the model
+      model: 'llama3-8b-8192',
       temperature: 0.7,
       max_tokens: 8192,
       top_p: 1,
@@ -329,5 +239,4 @@ app.post('/api/extract-field', async (req, res) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  connectDB();
 });

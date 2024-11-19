@@ -36,8 +36,8 @@ const Dashboard = () => {
 
   const getTimeAgo = (date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    let interval = seconds / 31536000;
     
+    let interval = seconds / 31536000;
     if (interval > 1) return Math.floor(interval) + " years ago";
     interval = seconds / 2592000;
     if (interval > 1) return Math.floor(interval) + " months ago";
@@ -52,12 +52,18 @@ const Dashboard = () => {
 
   const fetchCollaborations = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/get-collaborations/${user.uid}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/get-collaborations`);
       setCollaborations(response.data);
     } catch (error) {
       console.error('Error fetching collaborations:', error);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      fetchCollaborations();
+    }
+  }, [user]);
 
   const handleCardClick = (sessionId) => {
     navigate(`/session/${sessionId}`);
@@ -175,8 +181,8 @@ const Dashboard = () => {
           <div className="team-list">
             {collaborations.slice(0, 4).map((collab) => (
               <div key={collab.id} className="team-item">
-                <img src={collab.collaborator.photoURL || "https://via.placeholder.com/50"} alt={collab.collaborator.displayName} />
-                <span>{collab.collaborator.displayName}</span>
+                <img src={collab.photoURL || "https://via.placeholder.com/50"} alt={collab.displayName} />
+                <span>{collab.displayName}</span>
               </div>
             ))}
             {collaborations.length > 4 && (

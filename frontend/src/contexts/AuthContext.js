@@ -5,6 +5,9 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = API_URL;
+
 const AuthContext = createContext();
 
 export function useAuth() {
@@ -54,6 +57,9 @@ export function AuthProvider({ children }) {
       return result.user;
     } catch (error) {
       console.error('Google sign in error:', error);
+      if (error.code === 'auth/network-request-failed') {
+        alert('Network error. Please check your connection and try again.');
+      }
       throw error;
     }
   };
