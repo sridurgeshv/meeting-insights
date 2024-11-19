@@ -139,7 +139,6 @@ app.post('/api/update-user', authenticateUser, async (req, res) => {
 });
 
 // Transcription route for video files
-// Transcription route for video files
 app.post('/api/transcribe-video', upload.single('video'), async (req, res) => {
   try {
     const videoPath = req.file.path;
