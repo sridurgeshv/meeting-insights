@@ -6,7 +6,12 @@ import { io } from 'socket.io-client';
 import axios from 'axios';
 import '../globals/styles.css';
 
-const socket = io(process.env.REACT_APP_SOCKET_URL);
+const socket = io(process.env.REACT_APP_SOCKET_URL, {
+  withCredentials: true,
+  extraHeaders: {
+    "my-custom-header": "abcd"
+  }
+});
 
 const Dashboard = () => {
   const { user, setUser, logout } = useAuth();
