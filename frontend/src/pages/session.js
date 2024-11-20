@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import '../globals/styles.css';
+import '../globals/session.css';
 
 const FileUploadModal = ({ onClose, onFileSelect }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -110,20 +110,27 @@ const Session = () => {
 
   const handleFileSelect = useCallback(async (file) => {
     if (!file) return;
-
+  
     const formData = new FormData();
     formData.append('video', file);
-
+  
     try {
       setLoading(true);
       setError(null);
-
+  
+      // Get the current user's token
+      const token = await user.getIdToken();
+  
       const response = await fetch('http://localhost:5000/api/transcribe-video', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: formData,
       });
+      
       const data = await response.json();
-
+  
       if (response.ok) {
         setTranscription(data.transcription);
       } else {
@@ -135,7 +142,7 @@ const Session = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const extractContent = useCallback(async (field) => {
     if (!transcription) {
