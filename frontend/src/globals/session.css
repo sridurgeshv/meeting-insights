@@ -171,9 +171,9 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxy
 
   /* Analysis styles */
   .analysis {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-gap: 2rem;
   }
   
   .analysis__section {
@@ -196,9 +196,11 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxy
   
   .analysis__actions {
     display: flex;
+    flex-direction: column;
     gap: 0.875rem;
-    margin-top: 1.5rem;
-    }
+    margin-top: 0;
+    justify-self: end;
+  }
   
   .analysis__footer {
     display: flex;

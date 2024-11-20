@@ -144,7 +144,7 @@ const Session = () => {
     }
   }, [user]);
 
-  const extractContent = useCallback(async (field) => {
+  const extractContent = async (field) => {
     if (!transcription) {
       setError('Please upload and transcribe a video first.');
       return;
@@ -154,6 +154,7 @@ const Session = () => {
       setLoadingField(true);
       setError(null);
 
+      // Call the backend or LLM API with transcription and requested field
       const response = await fetch('http://localhost:5000/api/extract-field', {
         method: 'POST',
         headers: {
@@ -161,20 +162,16 @@ const Session = () => {
         },
         body: JSON.stringify({
           transcription,
-          field,
+          field, // e.g., "Action Items", "Key Decisions"
         }),
       });
       const data = await response.json();
 
       if (response.ok) {
         setResult(data.result);
-        // Update the extractedContent state based on the field
-        setExtractedContent(prev => ({
-          ...prev,
-          [field.toLowerCase().replace(/\s+/g, '')]: data.result
-        }));
       } else {
-        setError(data.error || 'Failed to extract the field.');
+        setError('Failed to extract the field.');
+        console.error('Extraction failed:', data.error);
       }
     } catch (error) {
       setError('An error occurred during field extraction.');
@@ -182,7 +179,7 @@ const Session = () => {
     } finally {
       setLoadingField(false);
     }
-  }, [transcription]);
+  };
 
   if (!session) {
     return <div className="session__loading">Loading session details...</div>;

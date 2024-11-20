@@ -208,7 +208,7 @@ app.post('/api/extract-field', async (req, res) => {
     const messages = [
       {
         role: 'system',
-        content: 'You are an assistant tasked with extracting specific information from meeting transcriptions.',
+        content: 'You are an assistant that extracts specific information from meeting transcriptions.',
       },
       {
         role: 'user',
@@ -219,7 +219,7 @@ app.post('/api/extract-field', async (req, res) => {
     // Call Groq's chat completion API
     const chatCompletion = await groq.chat.completions.create({
       messages,
-      model: 'llama3-8b-8192',
+      model: 'llama3-8b-8192', // Specify the model
       temperature: 0.7,
       max_tokens: 8192,
       top_p: 1,
