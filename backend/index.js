@@ -60,7 +60,6 @@ app.use('/api/save-user', authenticateUser);
 app.use('/api/update-user', authenticateUser);
 app.use('/api/get-collaborations', authenticateUser);
 app.use('/api/transcribe-video', authenticateUser);
-app.use('/api/extract-field', authenticateUser);
 
 // Create HTTP server
 const server = http.createServer(app);
