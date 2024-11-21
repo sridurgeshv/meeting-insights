@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import Card from './Card';
 import { io } from 'socket.io-client'; 
 import axios from 'axios';
-import '../globals/styles.css';
+import '../globals/dashboard.css';
 
 const socket = io(process.env.REACT_APP_SOCKET_URL, {
   withCredentials: true,
