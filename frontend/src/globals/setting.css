@@ -1,0 +1,116 @@
+/* General container styling */
+.settings-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+  }
+  
+  /* Heading styling */
+  .settings-container h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #333333;
+    font-size: 1.8rem;
+  }
+  
+  /* Form styling */
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #555555;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    color: #333333;
+    box-sizing: border-box;
+  }
+  
+  .form-group input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
+  }
+  
+  /* Photo preview styling */
+  .photo-preview {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .photo-preview img {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #007bff;
+  }
+  
+  /* Button styling */
+  .Update-button {
+    text-align: center;
+  }
+  
+  .update-btn {
+    padding: 0.8rem 2rem;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .update-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .update-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  /* Message styling */
+  .message {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 1rem;
+    color: #28a745;
+  }
+  
+  .message.error {
+    color: #dc3545;
+  }
+  
+  .msg-form {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #555555;
+    text-align: center;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .settings-container {
+      padding: 1.5rem;
+    }
+  
+    .update-btn {
+      width: 100%;
+      padding: 0.8rem;
+    }
+  }

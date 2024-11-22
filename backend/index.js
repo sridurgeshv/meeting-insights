@@ -12,6 +12,7 @@ const path = require('path');
 const Groq = require('groq-sdk');
 const session = require('express-session');
 const admin = require('firebase-admin');
+const sqlite3 = require('sqlite3').verbose();
 dotenv.config();
 
 // Convert Firebase private key from base64
@@ -232,6 +233,107 @@ app.post('/api/extract-field', async (req, res) => {
     console.error('Error extracting field:', error);
     res.status(500).json({ error: 'Failed to process the request.' });
   }
+});
+
+// Initialize SQLite database
+const db = new sqlite3.Database('./users.db', (err) => {
+  if (err) {
+    console.error('Error opening database:', err.message);
+  } else {
+    console.log('Connected to SQLite database.');
+
+    // Create the users table if it doesn't exist
+    db.run(
+      `CREATE TABLE IF NOT EXISTS users (
+        uid TEXT PRIMARY KEY,
+        email TEXT NOT NULL,
+        displayName TEXT,
+        photoURL TEXT
+      )`,
+      (err) => {
+        if (err) {
+          console.error('Error creating table:', err.message);
+        }
+      }
+    );
+  }
+});
+
+// Save user data route
+app.post('/api/save-user', (req, res) => {
+  const { uid, email, displayName, photoURL } = req.body;
+
+  if (!uid || !email) {
+    return res.status(400).json({ error: 'User UID and email are required' });
+  }
+
+  const query = `
+    INSERT INTO users (uid, email, displayName, photoURL)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(uid) DO UPDATE SET
+      email = excluded.email,
+      displayName = excluded.displayName,
+      photoURL = excluded.photoURL
+  `;
+
+  db.run(query, [uid, email, displayName, photoURL], (err) => {
+    if (err) {
+      console.error('Error saving user:', err.message);
+      return res.status(500).json({ error: 'Failed to save user' });
+    }
+
+    console.log('User saved:', { uid, email, displayName, photoURL });
+    res.status(200).json({ message: 'User saved successfully' });
+  });
+});
+
+// Update user data route
+app.post('/api/update-user', (req, res) => {
+  const { uid, displayName, photoURL } = req.body;
+
+  if (!uid) {
+    return res.status(400).json({ error: 'User UID is required' });
+  }
+
+  const query = `
+    UPDATE users
+    SET displayName = COALESCE(?, displayName),
+        photoURL = COALESCE(?, photoURL)
+    WHERE uid = ?
+  `;
+
+  db.run(query, [displayName, photoURL, uid], function (err) {
+    if (err) {
+      console.error('Error updating user:', err.message);
+      return res.status(500).json({ error: 'Failed to update user' });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log('User updated:', { uid, displayName, photoURL });
+    res.status(200).json({ message: 'User updated successfully' });
+  });
+});
+
+app.get('/api/get-user/:uid', (req, res) => {
+  const { uid } = req.params;
+
+  const query = `SELECT * FROM users WHERE uid = ?`;
+
+  db.get(query, [uid], (err, row) => {
+    if (err) {
+      console.error('Error fetching user:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch user.' });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    res.json(row);
+  });
 });
 
 // Start the server

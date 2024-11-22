@@ -5,6 +5,7 @@ import Welcome from './Components/Welcomepg';
 import SignIn from './Components/Signin';
 import Dashboard from './Components/Dashboard';
 import Session from './pages/session';
+import Settings from './Components/Settings';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -23,6 +24,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Welcome />} />
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/Settings" element={<Settings />} />
           <Route 
             path="/dashboard" 
             element={
