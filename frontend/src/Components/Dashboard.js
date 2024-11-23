@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import Card from './Card';
 import { io } from 'socket.io-client'; 
+import { X } from 'lucide-react';
 import axios from 'axios';
 import '../globals/dashboard.css';
 
@@ -18,6 +18,10 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
   const [collaborations, setCollaborations] = useState([]);
+  const [quickLinks, setQuickLinks] = useState([]);
+  const [isAddLinkOpen, setIsAddLinkOpen] = useState(false);
+  const [newLink, setNewLink] = useState({ name: '', url: '' });
+  const [hoveredLinkIndex, setHoveredLinkIndex] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -38,6 +42,19 @@ const Dashboard = () => {
       socket.off('user-update');
     };
   }, [user, setUser]);
+
+  const handleSaveLink = () => {
+    if (newLink.name && newLink.url) {
+      setQuickLinks([...quickLinks, newLink]);
+      setNewLink({ name: '', url: '' });
+      setIsAddLinkOpen(false);
+    }
+  };
+
+  const handleDeleteLink = (indexToDelete) => {
+    const updatedLinks = quickLinks.filter((_, index) => index !== indexToDelete);
+    setQuickLinks(updatedLinks);
+  };
 
   const getTimeAgo = (date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
@@ -139,69 +156,124 @@ const Dashboard = () => {
 
       {/* Main content */}
       <div className="main-content">
-        {/* Title */}
         <div className="header">
           <h1>InsightSync</h1>
         </div>
 
-        {/* Session section */}
-        <div className="sessions-container">
-          <div className="sessions-header">
-            <h2>Sessions</h2>
-            <button 
-              className="add-button" 
-              onClick={handleCreateSession}
-            >
-              +
-            </button>
-          </div>       
-          <div className="divider"></div>        
-          {sessions.length === 0 ? (
-            <div className="empty-state">
-              <p>No sessions yet</p>
+        <div className="upper-grid">
+          <div className="content-card sessions-card">
+            <div className="section-header">
+              <h2 className="section-title">Sessions</h2>
+              <button className="add-button">+</button>
             </div>
-          ) : (
-            <div className="sessions-grid">
-              {sessions.map((session) => (
-                 <Card
-                   key={session.id}
-                   id={session.id}
-                   language={session.language}
-                   title={session.title}
-                   timeAgo={getTimeAgo(session.lastEdited)}
-                   onClick={() => handleCardClick(session.id)}
-                   onDelete={handleDeleteSession}
-                 />
+            <div className="divider"></div>
+            <div className="sessions-content">
+              {sessions.length === 0 ? (
+                <div className="empty-message">No sessions yet</div>
+              ) : (
+                <div className="sessions-list">
+                  {sessions.map(session => (
+                    <div key={session.id} className="session-item">
+                      {session.title}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+        {/* Statistics Section */}
+        <div className="content-card statistics-card">
+            <div className="section-header">
+              <h2 className="section-title">Statistics</h2>
+            </div>
+            <div className="divider2"></div>
+            <div className="statistics-content">Analysis of words</div>
+          </div>
+        </div>
+
+        <div className="content-card quick-links-card">
+          <div className="section-header">
+            <h2 className="section-title">Quick Links</h2>
+            <button className="add-button" onClick={() => setIsAddLinkOpen(true)}>+</button>
+          </div>
+          <div className="divider2"></div>
+          <div className="quick-links-content">
+            {quickLinks.length === 0 ? (
+              <div className="empty-message">No links added</div>
+            ) : (
+              <div className="links-list">
+                {quickLinks.map((link, index) => (
+                  <div
+                  key={index}
+                  className="link-item-wrapper"
+                  onMouseEnter={() => setHoveredLinkIndex(index)}
+                  onMouseLeave={() => setHoveredLinkIndex(null)}
+                >
+                 <a
+                      href={link.url}
+                      className="link-item"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {link.name}
+                    </a>
+                    {hoveredLinkIndex === index && (
+                      <button
+                        className="delete-link-button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleDeleteLink(index);
+                        }}
+                      >
+                        <X size={16} />
+                      </button>
+                )}
+                </div>
               ))}
             </div>
           )}
         </div>
+      </div>
 
-        {/* Teams section */}
-        <div className="teams-section">
-        <div className="teams-header">
-          <h2>Users</h2>
-        </div>
-          <div className="divider2"></div>
-          <div className="team-list">
-            {collaborations.slice(0, 4).map((collab) => (
-              <div key={collab.id} className="team-item">
-                <img src={collab.photoURL || "https://via.placeholder.com/50"} alt={collab.displayName} />
-                <span>{collab.displayName}</span>
-              </div>
-            ))}
-            {collaborations.length > 4 && (
-              <div className="team-item more" onClick={() => navigate('/teams')}>
-                <div className="more-circle">
-                  <span>More</span>
+         {/* Modal */}
+         {isAddLinkOpen && (
+          <div className="modal-backdrop">
+            <div className="modal-container">
+              <div className="modal-content">
+                <h3 className="modal-title">Add Quick Link</h3>
+                <input
+                  type="text"
+                  placeholder="Name"
+                  value={newLink.name}
+                  onChange={e => setNewLink({ ...newLink, name: e.target.value })}
+                  className="modal-input"
+                />
+                <input
+                  type="url"
+                  placeholder="URL"
+                  value={newLink.url}
+                  onChange={e => setNewLink({ ...newLink, url: e.target.value })}
+                  className="modal-input"
+                />
+                <div className="modal-buttons">
+                  <button onClick={handleSaveLink} className="modal-button save-button">
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setIsAddLinkOpen(false)}
+                    className="modal-button cancel-button"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
-}
+};
 
 export default Dashboard;
