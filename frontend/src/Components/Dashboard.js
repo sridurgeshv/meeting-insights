@@ -164,7 +164,7 @@ const Dashboard = () => {
           <div className="content-card sessions-card">
             <div className="section-header">
               <h2 className="section-title">Sessions</h2>
-              <button className="add-button">+</button>
+              <button className="add-button" onClick={handleCreateSession}>+</button>
             </div>
             <div className="divider"></div>
             <div className="sessions-content">
