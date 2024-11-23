@@ -15,7 +15,6 @@ function Settings() {
     if (user) {
       setDisplayName(user.displayName || '');
       setPhotoURL(user.photoURL || '');
-      
     }
   }, [user]);
 
@@ -28,7 +27,6 @@ function Settings() {
     }
     return () => clearTimeout(timer);
   }, [message, navigate]);
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -92,7 +90,6 @@ function Settings() {
       {message === 'Profile updated successfully!' && (
         <p className="msg-form">Redirecting to dashboard in 5 seconds...</p>
       )}
-
     </div>
   );
 }

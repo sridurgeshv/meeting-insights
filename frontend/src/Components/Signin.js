@@ -10,13 +10,15 @@ function SignIn() {
     try {
       const result = await signInWithGoogle();
       if (result) {
-        navigate('/dashboard');
+        // Wait for a brief moment to ensure Firebase auth state is updated
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 500);
       }
     } catch (error) {
       console.error('Sign in error:', error);
     }
   };
-
 
   return (
     <div className="min-hs-screen">
