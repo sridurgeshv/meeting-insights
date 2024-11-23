@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getAuth } from 'firebase/auth';
 import '../globals/session.css';
 
 const FileUploadModal = ({ onClose, onFileSelect }) => {
@@ -81,6 +82,7 @@ const Session = () => {
     meetingType: ''
   });
   const { user } = useAuth();
+  const auth = getAuth();
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
@@ -109,7 +111,7 @@ const Session = () => {
   }, [session, extractedContent, navigate]);
 
   const handleFileSelect = useCallback(async (file) => {
-    if (!file) return;
+    if (!file || !auth.currentUser) return;
   
     const formData = new FormData();
     formData.append('video', file);
@@ -119,7 +121,7 @@ const Session = () => {
       setError(null);
   
       // Get the current user's token
-      const token = await user.getIdToken();
+      const token = await auth.currentUser.getIdToken(true);
   
       const response = await fetch('http://localhost:5000/api/transcribe-video', {
         method: 'POST',
@@ -142,7 +144,7 @@ const Session = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [auth]);
 
   const extractContent = async (field) => {
     if (!transcription) {
