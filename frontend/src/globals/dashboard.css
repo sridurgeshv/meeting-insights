@@ -146,20 +146,20 @@
 .divider {
   height: 2px;
   background-color: #2c3e50;
-  margin: 0 20px 15px;
+  margin: 0 10px 15px;
+  max-width: 100%;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 48px 220px;
-}
-
-.empty-state p {
-  font-size: 24px;
+.empty-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
   color: #6c7a89;
-  font-weight: 300;
-  text-align: right;
+  font-size: 24px;
 }
+
+
 
 .sessions-grid {
   display: grid;
@@ -197,10 +197,21 @@
 
 .sessions-card {
   min-height: 300px;
+  width: 100%;
+}
+
+.statistics-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #6c7a89;
+  font-size: 16px;
 }
 
 .statistics-card {
   min-height: 300px;
+  width: 350px;
 }
 
 .quick-links-card {
@@ -213,6 +224,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  padding: 0 10px;
 }
 
 .section-title {
@@ -319,7 +331,14 @@
   position: relative;
   display: flex;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.link-item-wrapper:hover {
+  background-color: #f8f9fa;
 }
 
 .link-item {
@@ -329,6 +348,8 @@
   border-radius: 4px;
   transition: all 0.2s;
   flex-grow: 1;
+  font-size: 22px;
+  padding: 4px 0;
 }
 
 .link-item:hover {
@@ -336,8 +357,6 @@
 }
 
 .delete-link-button {
-  position: absolute;
-  right: 8px;
   background: none;
   border: none;
   color: #dc3545;
@@ -348,6 +367,7 @@
   justify-content: center;
   opacity: 0;
   transition: opacity 0.2s;
+  margin-left: 18px;
 }
 
 .link-item-wrapper:hover .delete-link-button {
