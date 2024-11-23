@@ -75,6 +75,8 @@ const Session = () => {
   const [transcription, setTranscription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [result, setResult] = useState('');
+  const [loadingField, setLoadingField] = useState(false);
   const [extractedContent, setExtractedContent] = useState({
     actionItems: '',
     keyDecisions: '',
@@ -86,8 +88,12 @@ const Session = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
-  const [result, setResult] = useState('');
-  const [loadingField, setLoadingField] = useState(false);
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+  const [loadingQnA, setLoadingQnA] = useState(false);
+  const [highlights, setHighlights] = useState('');
+  const [loadingHighlights, setLoadingHighlights] = useState(false);
+  
 
   useEffect(() => {
     const savedSessions = JSON.parse(localStorage.getItem('savedSession')) || [];
@@ -145,6 +151,76 @@ const Session = () => {
       setLoading(false);
     }
   }, [auth]);
+
+  const fetchSmartHighlights = async () => {
+    if (!transcription) {
+      setError('Please upload and transcribe a video first.');
+      return;
+    }
+
+    try {
+      setLoadingHighlights(true);
+      setError(null);
+
+      const response = await fetch('http://localhost:5000/api/smart-highlights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ transcription }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        setHighlights(data.highlights);
+      } else {
+        setError('Failed to generate smart highlights.');
+      }
+    } catch (error) {
+      setError('An error occurred while fetching smart highlights.');
+    } finally {
+      setLoadingHighlights(false);
+    }
+  };
+
+  const handleQuestionSubmit = async () => {
+    if (!transcription) {
+      setError('Please upload and transcribe a video first.');
+      return;
+    }
+
+    if (!question.trim()) {
+      setError('Please enter a question.');
+      return;
+    }
+
+    try {
+      setLoadingQnA(true);
+      setError(null);
+
+      const response = await fetch('http://localhost:5000/api/ask-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transcription,
+          question,
+        }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        setAnswer(data.answer);
+      } else {
+        setError('Failed to retrieve an answer.');
+      }
+    } catch (error) {
+      setError('An error occurred during the Q&A process.');
+    } finally {
+      setLoadingQnA(false);
+    }
+  };
 
   const extractContent = async (field) => {
     if (!transcription) {
@@ -237,7 +313,54 @@ const Session = () => {
               <div className="analysis__section">
                 <h3 className="analysis__title">Transcription</h3>
                 <p className="analysis__content">{transcription}</p>
+                <button
+                  onClick={fetchSmartHighlights}
+                  className="generate-btn"
+                  disabled={loadingHighlights}
+                >
+                  Generate Smart Highlights
+                </button>
+
+                {loadingHighlights && <p>Generating highlights, please wait...</p>}
+                {highlights && (
+                   <div className="highlights-container">
+                   <h3 className="highlights-header">Smart Highlights:</h3>
+                   <div className="highlights-text">
+                     {highlights.split('\n').map((highlight, index) => (
+                       <p key={index} className="highlight-item">
+                         {highlight}
+                       </p>
+                    ))}
+                    </div>
+                  </div>
+                )}
               </div>
+
+              <div className="question-container">
+              <h3 className="question-header">Ask a Question:</h3>
+              <input
+                type="text"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="Type your question here..."
+                className="question-input"
+              />
+              <button
+                onClick={handleQuestionSubmit}
+                className="submit-btn"
+                disabled={loadingQnA}
+              >
+                Submit Question
+              </button>
+
+              {loadingQnA && <p>Fetching answer, please wait...</p>}
+              {answer && (
+                <div className="answer-container">
+                  <h3 className="answer-header">Answer:</h3>
+                  <p className="answer-text">{answer}</p>
+                </div>
+              )}
+            </div>
 
               <div className="analysis__actions">
                 <button 

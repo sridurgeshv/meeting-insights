@@ -220,6 +220,72 @@ app.post('/api/transcribe-video', upload.single('video'), async (req, res) => {
   }
 });
 
+// Q&A feature
+app.post('/api/ask-question', async (req, res) => {
+  const { transcription, question } = req.body;
+
+  try {
+    // Prepare the Groq or GPT prompt
+    const messages = [
+      {
+        role: "system",
+        content: "You are an assistant that answers questions based on meeting transcriptions.",
+      },
+      {
+        role: "user",
+        content: `Based on the following transcription, answer the question:\n\nTranscription: ${transcription}\n\nQuestion: ${question}`,
+      },
+    ];
+
+    // Call the Groq or LLM API
+    const response = await groq.chat.completions.create({
+      messages,
+      model: "llama3-8b-8192",
+      temperature: 0.7,
+      max_tokens: 500,
+    });
+
+    const answer = response.choices[0]?.message?.content.trim();
+    res.json({ answer });
+  } catch (error) {
+    console.error("Error answering question:", error);
+    res.status(500).json({ error: "Failed to process the question." });
+  }
+});
+
+// ai smart highlighting feature 
+app.post('/api/smart-highlights', async (req, res) => {
+  const { transcription } = req.body;
+
+  try {
+    // Prepare the prompt for AI to generate highlights
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are an assistant that highlights important sentences or questions in meeting transcriptions and provides additional context.',
+      },
+      {
+        role: 'user',
+        content: `Highlight important parts of the following transcription and provide timestamps and context:\n\n${transcription}`,
+      },
+    ];
+
+    // Call the Groq or AI API
+    const response = await groq.chat.completions.create({
+      messages,
+      model: 'llama3-8b-8192',
+      temperature: 0.7,
+      max_tokens: 8192,
+    });
+
+    const highlights = response.choices[0]?.message?.content.trim();
+    res.json({ highlights });
+  } catch (error) {
+    console.error('Error generating highlights:', error);
+    res.status(500).json({ error: 'Failed to generate highlights.' });
+  }
+});
+
 app.post('/api/extract-field', async (req, res) => {
   const { transcription, field } = req.body;
 
