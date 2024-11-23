@@ -226,7 +226,7 @@ const Dashboard = () => {
                           handleDeleteLink(index);
                         }}
                       >
-                        <X size={16} />
+                        <X size={20} />
                       </button>
                 )}
                 </div>

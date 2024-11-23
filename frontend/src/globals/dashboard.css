@@ -159,8 +159,6 @@
   font-size: 24px;
 }
 
-
-
 .sessions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -331,43 +329,40 @@
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 0.75rem;
   padding: 8px 12px;
   border-radius: 6px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .link-item-wrapper:hover {
-  background-color: #f8f9fa;
+  background-color: #939aa3;
 }
 
 .link-item {
   text-decoration: none;
   color: #2c3e50;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s;
   flex-grow: 1;
   font-size: 22px;
   padding: 4px 0;
 }
 
 .link-item:hover {
-  background-color: #f8f9fa;
+  background-color: #939aa3;
 }
 
 .delete-link-button {
-  background: none;
+  background-color: #939aa3;
   border: none;
   color: #dc3545;
   cursor: pointer;
   padding: 4px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: right;
+  justify-content: right;
   opacity: 0;
   transition: opacity 0.2s;
-  margin-left: 18px;
 }
 
 .link-item-wrapper:hover .delete-link-button {
@@ -376,6 +371,7 @@
 
 .delete-link-button:hover {
   color: #c82333;
+  background-color: #939aa3;
 }
 
 /* Update responsive styles */
