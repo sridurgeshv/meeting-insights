@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getAuth } from 'firebase/auth';
-import { Alert, AlertDescription } from '../Components/Alertbox';
+import { Alert, AlertDescription } from '../Components/AlertDemo';
 import '../globals/session.css';
 
 const FileUploadModal = ({ onClose, onFileSelect }) => {
@@ -146,14 +146,16 @@ const Session = () => {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
   
-      setSaveNotificationStatus('success');
+      // For success:
+      setSaveNotificationStatus('default'); // This will use green background
       setSaveNotificationMessage('Session saved successfully!');
       setShowSaveNotification(true);
   
       setTimeout(() => setShowSaveNotification(false), 3000);
     } catch (error) {
       console.error('Error saving session:', error);
-      setSaveNotificationStatus('error');
+      // For error:
+      setSaveNotificationStatus('destructive'); // This will use red background
       setSaveNotificationMessage('Failed to save session: ' + error.message);
       setShowSaveNotification(true);
       setTimeout(() => setShowSaveNotification(false), 5000);
@@ -337,9 +339,11 @@ const Session = () => {
     <div className="session">
       {showSaveNotification && (
         <div className="fixed top-4 right-4 z-50">
+          {showSaveNotification && (
           <Alert variant={saveNotificationStatus === 'success' ? 'default' : 'destructive'}>
             <AlertDescription>{saveNotificationMessage}</AlertDescription>
           </Alert>
+        )}
         </div>
       )}
       <header className="session__header">
