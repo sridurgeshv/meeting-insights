@@ -34,7 +34,10 @@ Follow the instructions below to set up the project on your local machine.
 - Node.js and npm installed on your machine.
 - An API Key from Groq
 - Gemini API key
-- ffmpeg installed in your system 
+- ffmpeg installed in your system
+  For windows user watch this video to install ffmpeg  [Ffmpeg](https://youtu.be/mEV5ZRqaWu8?si=vNPZBqYU2TxqgC2y) 
+
+  
 
 ##  API Key Setup
 
