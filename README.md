@@ -35,7 +35,14 @@ Follow the instructions below to set up the project on your local machine.
 - An API Key from Groq
 - Gemini API key
 - ffmpeg installed in your system
-  For windows user watch this video to install ffmpeg  [Ffmpeg](https://youtu.be/mEV5ZRqaWu8?si=vNPZBqYU2TxqgC2y) 
+  
+  For windows user watch this video to install ffmpeg  [Ffmpeg](https://youtu.be/mEV5ZRqaWu8?si=vNPZBqYU2TxqgC2y)
+
+  For linux or ubuntu based system run these commands
+  
+sudo apt update
+sudo apt install ffmpeg
+
 
   
 
