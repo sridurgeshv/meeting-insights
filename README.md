@@ -79,14 +79,7 @@ npm run dev
 
 ## Usage
 
-1. Open the application in your browser:
-```bash
-http://localhost:3000
-```
-
-2. Upload a meeting recording and wait for transcription.
-
-3. Explore the extracted highlights, interact with the transcription using Q&A, and save the session for future reference.
+Open your web browser and navigate to http://localhost:3000 to access the application.
 
 ## Contact
 
