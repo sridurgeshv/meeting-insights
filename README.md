@@ -32,7 +32,26 @@ Follow the instructions below to set up the project on your local machine.
 
 ## Prerequisites
 - Node.js and npm installed on your machine.
-- Backend server running to process APIs.
+- An API Key from Groq
+- Gemini API key
+- ffmpeg installed in your system
+  
+  For windows user watch this video to install ffmpeg  [Ffmpeg](https://youtu.be/mEV5ZRqaWu8?si=vNPZBqYU2TxqgC2y)
+
+  For linux or ubuntu based system run these commands
+  
+sudo apt update
+sudo apt install ffmpeg
+
+
+  
+
+##  API Key Setup
+
+1. Visit the [Gemini](https://g.co/kgs/rt8LbjZ) to get your API Key and paste it in the .env file in backend directory.
+   
+ 4. Visit the [Groq](https://groq.com/) and click on "FREE API KEY. Sign in and get your API Key and paste it in the .env file in backend directory.
+   
 
 ### Installation
 
@@ -70,19 +89,14 @@ npm run dev
 
 ## Usage
 
-1. Open the application in your browser:
-```bash
-http://localhost:3000
-```
-
-2. Upload a meeting recording and wait for transcription.
-
-3. Explore the extracted highlights, interact with the transcription using Q&A, and save the session for future reference.
-
-## License
-This project is licensed under the MIT License. See the LICENSE file for details.
+Open your web browser and navigate to http://localhost:3000 to access the application.
 
 ## Contact
-For questions or collaboration, please reach out:
 
-- Email: ritikasrivastava456@gmail.com
+For questions, feedback, or support, please contact us:
+
+- Email: sridurgeshv@gmail.com, ritikasrivastava456@gmail.com
+- Project Repository: https://github.com/sridurgeshv/meeting-insights
+  
+## Video Demo
+For a comprehensive overview of the application's features and functionality, please watch our [video demonstration](). This walkthrough provides detailed guidance on effectively using and navigating Insightsync.
