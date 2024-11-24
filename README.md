@@ -13,19 +13,17 @@ This dashboard simplifies meeting analysis by providing users with actionable in
 - Session Management: Save, edit, and navigate through previously analyzed sessions.
 
 ## Why Choose Our App?
-- Time-Saving: Automatically extract critical information from meeting recordings, reducing manual effort.
+- Time-Saving: Automatically extract key points from meeting recordings.
+  
+- Collaboration: Share summaries, action items, and decisions with your team.
+  
+-  Accurate Insights: AI-powered transcription with context-aware analysis.
 
-- Enhanced Collaboration: Share summaries, action items, and decisions with your team for better alignment.
+-  User-Friendly: Intuitive design for easy navigation.
+  
+-  Customizable: Adapt the dashboard to your workflow. Secure: Robust authentication and data protection. 
 
-- Accurate Insights: Advanced AI ensures precise transcription and context-aware analysis.
-
-- User-Friendly Interface: Intuitive design for easy navigation, even for non-technical users.
-
-- Customizable Workflow: Tailor the dashboard to your specific workflow requirements.
-
-- Secure Environment: Built with robust authentication and secure data handling practices.
-
-Our app goes beyond transcription by offering actionable insights to streamline your team's productivity and decision-making processes.
+Boost team productivity with actionable insights beyond transcription!
 
 ## Getting Started
 Follow the instructions below to set up the project on your local machine.
@@ -40,11 +38,9 @@ Follow the instructions below to set up the project on your local machine.
 
   For linux or ubuntu based system run these commands
   
-sudo apt update
-sudo apt install ffmpeg
+- sudo apt update
 
-
-  
+- sudo apt install ffmpeg
 
 ##  API Key Setup
 
