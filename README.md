@@ -32,7 +32,16 @@ Follow the instructions below to set up the project on your local machine.
 
 ## Prerequisites
 - Node.js and npm installed on your machine.
-- Backend server running to process APIs.
+- An API Key from Groq
+- Gemini API key
+- ffmpeg installed in your system 
+
+##  API Key Setup
+
+1. Visit the [Gemini] (https://g.co/kgs/rt8LbjZ) to get your API Key and paste it in the .env file in server directory.
+   
+ 2. Visit the [Groq](https://groq.com/) and click on "FREE API KEY. Sign in and get your API Key and paste it in the .env file in server directory.
+   
 
 ### Installation
 
