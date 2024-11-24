@@ -9,8 +9,7 @@ function SignIn() {
   const handleSignIn = async () => {
     try {
       const result = await signInWithGoogle();
-      if (result) {
-        // Wait for a brief moment to ensure Firebase auth state is updated
+      if (result) {      
         setTimeout(() => {
           navigate('/dashboard');
         }, 500);

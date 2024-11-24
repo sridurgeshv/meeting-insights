@@ -58,8 +58,7 @@ export function AuthProvider({ children }) {
           
           setUser(userData);
         } catch (error) {
-          console.error('Error saving user data:', error);
-          // Still set the user even if backend save fails
+          console.error('Error saving user data:', error);         
           setUser({
             uid: user.uid,
             email: user.email,

@@ -29,9 +29,9 @@
 }
 
 .session__header {
-  display: flex; /* Enables flexbox layout */
-  justify-content: space-between; /* Spaces elements to opposite ends */
-  align-items: center; /* Vertically aligns elements */
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #e2e8f0;
@@ -41,7 +41,7 @@
   font-size: 1.875rem;
   font-weight: 700;
   color: var(--color-text);
-  margin: 0; /* Removes default margin for better alignment */
+  margin: 0; 
 }
 
 .session__loading {

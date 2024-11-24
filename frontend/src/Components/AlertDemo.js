@@ -23,7 +23,6 @@ export const AlertDescription = ({ children }) => (
   <div className="text-sm font-medium text-white">{children}</div>
 );
 
-// Add keyframes for slide-in animation to your CSS:
 const styleSheet = document.createElement('style');
 styleSheet.textContent = `
   @keyframes slideIn {
