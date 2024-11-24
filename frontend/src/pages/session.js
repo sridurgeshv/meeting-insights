@@ -390,6 +390,8 @@ const Session = () => {
 
           {transcription && (
             <div className="analysis">
+              <div className="analysis__main-row">
+              {/* Transcription Section */}
               <div className="analysis__section">
                 <h3 className="analysis__title">Transcription</h3>
                 <p className="analysis__content">{transcription}</p>
@@ -400,11 +402,12 @@ const Session = () => {
                 >
                   Generate Smart Highlights
                 </button>
+                </div>
 
                 {loadingHighlights && <p>Generating highlights, please wait...</p>}
                 {highlights && (
                    <div className="highlights-container">
-                   <h3 className="highlights-header">Smart Highlights:</h3>
+                   <h3 className="highlights-header">Smart Highlights</h3>
                    <div className="highlights-text">
                      {highlights.split('\n').map((highlight, index) => (
                        <p key={index} className="highlight-item">
@@ -413,8 +416,7 @@ const Session = () => {
                     ))}
                     </div>
                   </div>
-                )}
-              </div>
+                )}             
 
               <div className="question-container">
               <h3 className="question-header">Ask a Question:</h3>
@@ -440,6 +442,7 @@ const Session = () => {
                   <p className="answer-text">{answer}</p>
                 </div>
               )}
+            </div>
             </div>
 
               <div className="analysis__actions">
@@ -479,7 +482,8 @@ const Session = () => {
                   <span>Extracting content...</span>
                 </div>
               )}
-
+              
+              {/* Extraction Result */}
               {result && (
                 <div className="analysis__result">
                   <h3 className="analysis__subtitle">Extracted Content:</h3>
