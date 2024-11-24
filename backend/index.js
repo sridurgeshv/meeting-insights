@@ -253,6 +253,36 @@ app.post('/api/ask-question', async (req, res) => {
   }
 });
 
+app.post('/api/generate-title', async (req, res) => {
+  const { transcription } = req.body;
+
+  try {
+    const messages = [
+      {
+        role: "system",
+        content: "Generate a concise, professional 3-4 word title based on the meeting transcription content. The title should be clear and descriptive."
+      },
+      {
+        role: "user",
+        content: `Generate a short professional title based on this transcription: ${transcription}`
+      }
+    ];
+
+    const response = await groq.chat.completions.create({
+      messages,
+      model: "llama3-8b-8192",
+      temperature: 0.7,
+      max_tokens: 50,
+    });
+
+    const title = response.choices[0]?.message?.content.trim();
+    res.json({ title });
+  } catch (error) {
+    console.error("Error generating title:", error);
+    res.status(500).json({ error: "Failed to generate title." });
+  }
+});
+
 // ai smart highlighting feature 
 app.post('/api/smart-highlights', async (req, res) => {
   const { transcription } = req.body;

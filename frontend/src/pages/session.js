@@ -93,7 +93,7 @@ const Session = () => {
   const [loadingQnA, setLoadingQnA] = useState(false);
   const [highlights, setHighlights] = useState('');
   const [loadingHighlights, setLoadingHighlights] = useState(false);
-  
+  const [title, setTitle] = useState('New Session');
 
   useEffect(() => {
     const savedSessions = JSON.parse(localStorage.getItem('savedSession')) || [];
@@ -141,6 +141,8 @@ const Session = () => {
   
       if (response.ok) {
         setTranscription(data.transcription);
+        // Generate title after successful transcription
+        await generateTitle(data.transcription);
       } else {
         setError(data.error || 'Transcription failed.');
       }
@@ -180,6 +182,30 @@ const Session = () => {
       setError('An error occurred while fetching smart highlights.');
     } finally {
       setLoadingHighlights(false);
+    }
+  };
+
+  const generateTitle = async (transcriptionText) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/generate-title', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ transcription: transcriptionText }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setTitle(data.title);
+        // Update session with new title
+        const savedSessions = JSON.parse(localStorage.getItem('savedSession')) || [];
+        const updatedSessions = savedSessions.map(s => 
+          s.id === sessionId ? { ...s, title: data.title } : s
+        );
+        localStorage.setItem('savedSession', JSON.stringify(updatedSessions));
+      }
+    } catch (error) {
+      console.error('Error generating title:', error);
     }
   };
 
@@ -266,7 +292,7 @@ const Session = () => {
   return (
     <div className="session">
       <header className="session__header">
-        <h1 className="session__title">{session.title}</h1>
+      <h1 className="session__title">{title}</h1>
         <button 
           onClick={handleSaveSession}
           className="button button--primary"
