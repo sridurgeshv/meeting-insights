@@ -79,10 +79,12 @@ http://localhost:3000
 
 3. Explore the extracted highlights, interact with the transcription using Q&A, and save the session for future reference.
 
-## License
-This project is licensed under the MIT License. See the LICENSE file for details.
-
 ## Contact
-For questions or collaboration, please reach out:
 
-- Email: ritikasrivastava456@gmail.com
+For questions, feedback, or support, please contact us:
+
+- Email: sridurgeshv@gmail.com, ritikasrivastava456@gmail.com
+- Project Repository: https://github.com/sridurgeshv/meeting-insights
+  
+## Video Demo
+For a comprehensive overview of the 
