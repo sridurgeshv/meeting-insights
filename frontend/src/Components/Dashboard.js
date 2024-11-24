@@ -87,7 +87,7 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  const handleCardClick = (sessionId) => {
+  const handlesessionClick = (sessionId) => {
     navigate(`/session/${sessionId}`);
   };
 
@@ -142,7 +142,6 @@ const Dashboard = () => {
             <ul>
               <li onClick={() => navigate('/dashboard')}>Dashboard</li>
               <li onClick={() => navigate('/projects')}>Sessions</li>
-              <li onClick={() => navigate('/teams')}>Users</li>
               <li onClick={() => navigate('/settings')}>Settings</li>
             </ul>
           </nav>

@@ -34,7 +34,7 @@
 
   .sidebar .menu {
     flex: 1;
-    margin-top: 75px;
+    margin-top: 95px;
   }
   
   .sidebar ul {
@@ -58,6 +58,7 @@
     flex-direction: row; 
     align-items: center; 
     gap: 10px;
+    margin-top: 15px;
     margin-left: 15px;
   }
 
@@ -74,11 +75,11 @@
   }
   
   .sidebar .user-greeting .hi-text {
-    font-size: 18px;
+    font-size: 20px;
   }
   
   .sidebar .user-greeting .username {
-    font-size: 18px;
+    font-size: 20px;
     display: block;
     white-space: nowrap;
     overflow: hidden;
