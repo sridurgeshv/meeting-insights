@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getAuth } from 'firebase/auth';
+import { Alert, AlertDescription } from '../Components/Alertbox';
 import '../globals/session.css';
 
 const FileUploadModal = ({ onClose, onFileSelect }) => {
@@ -94,6 +95,9 @@ const Session = () => {
   const [highlights, setHighlights] = useState('');
   const [loadingHighlights, setLoadingHighlights] = useState(false);
   const [title, setTitle] = useState('New Session');
+  const [showSaveNotification, setShowSaveNotification] = useState(false);
+  const [saveNotificationStatus, setSaveNotificationStatus] = useState('');
+  const [saveNotificationMessage, setSaveNotificationMessage] = useState('');
 
   useEffect(() => {
     const savedSessions = JSON.parse(localStorage.getItem('savedSession')) || [];
@@ -105,16 +109,56 @@ const Session = () => {
     }
   }, [sessionId]);
 
-  const handleSaveSession = useCallback(() => {
-    if (!session) return;
+  const handleSaveSession = useCallback(async () => {
+    if (!session || !user) return;
     
-    const savedSessions = JSON.parse(localStorage.getItem('savedSession')) || [];
-    const updatedSessions = savedSessions.map(s => 
-      s.id === session.id ? { ...s, ...extractedContent } : s
-    );
-    localStorage.setItem('savedSession', JSON.stringify(updatedSessions));
-    navigate('/dashboard');
-  }, [session, extractedContent, navigate]);
+    try {
+      setSaveNotificationStatus('loading');
+      setSaveNotificationMessage('Saving session...');
+      setShowSaveNotification(true);
+    
+      const sessionData = {
+        sessionId: session.id,
+        title: title || 'Untitled Session',
+        userId: user.uid,
+        transcription: transcription || '',
+        qaData: question && answer ? [{ question, answer }] : [],
+        extractedContent: {
+          actionItems: extractedContent.actionItems || '',
+          keyDecisions: extractedContent.keyDecisions || '',
+          questions: extractedContent.questions || '',
+          meetingType: extractedContent.meetingType || ''
+        },
+        highlights: highlights || ''
+      };
+  
+      // Use auth.currentUser instead of user
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch('http://localhost:5000/api/save-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(sessionData),
+      });
+  
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+  
+      setSaveNotificationStatus('success');
+      setSaveNotificationMessage('Session saved successfully!');
+      setShowSaveNotification(true);
+  
+      setTimeout(() => setShowSaveNotification(false), 3000);
+    } catch (error) {
+      console.error('Error saving session:', error);
+      setSaveNotificationStatus('error');
+      setSaveNotificationMessage('Failed to save session: ' + error.message);
+      setShowSaveNotification(true);
+      setTimeout(() => setShowSaveNotification(false), 5000);
+    }
+  }, [session, title, user, auth, transcription, question, answer, extractedContent, highlights]);
 
   const handleFileSelect = useCallback(async (file) => {
     if (!file || !auth.currentUser) return;
@@ -291,12 +335,18 @@ const Session = () => {
 
   return (
     <div className="session">
+      {showSaveNotification && (
+        <div className="fixed top-4 right-4 z-50">
+          <Alert variant={saveNotificationStatus === 'success' ? 'default' : 'destructive'}>
+            <AlertDescription>{saveNotificationMessage}</AlertDescription>
+          </Alert>
+        </div>
+      )}
       <header className="session__header">
       <h1 className="session__title">{title}</h1>
-        <button 
+      <button 
           onClick={handleSaveSession}
           className="button button--primary"
-          disabled={!Object.values(extractedContent).some(Boolean)}
         >
           Save Session
         </button>

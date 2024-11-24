@@ -13,6 +13,7 @@ const Groq = require('groq-sdk');
 const session = require('express-session');
 const admin = require('firebase-admin');
 const sqlite3 = require('sqlite3').verbose();
+require('./migrations');
 dotenv.config();
 
 // Convert Firebase private key from base64
@@ -156,6 +157,93 @@ app.post('/api/update-user', authenticateUser, async (req, res) => {
     res.status(200).json({ message: 'User updated successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error updating user', error });
+  }
+});
+
+// Save complete session data
+app.post('/api/save-session', authenticateUser, async (req, res) => {
+  const { 
+    sessionId, 
+    title, 
+    userId,
+    transcription,
+    qaData,
+    extractedContent,
+    highlights
+  } = req.body;
+
+  const db = new sqlite3.Database('./users.db');
+
+  try {
+    // Promisify db.run
+    const runAsync = (sql, params) => new Promise((resolve, reject) => {
+      db.run(sql, params, function(err) {
+        if (err) reject(err);
+        else resolve(this);
+      });
+    });
+
+    // Start transaction
+    await runAsync('BEGIN TRANSACTION');
+
+    // Insert session
+    await runAsync(
+      'INSERT OR REPLACE INTO sessions (session_id, title, user_id) VALUES (?, ?, ?)',
+      [sessionId, title, userId]
+    );
+
+    // Insert transcription if exists
+    if (transcription) {
+      await runAsync(
+        'INSERT OR REPLACE INTO transcriptions (session_id, content) VALUES (?, ?)',
+        [sessionId, transcription]
+      );
+    }
+
+    // Insert QA pairs if exist
+    if (qaData?.length) {
+      for (const qa of qaData) {
+        await runAsync(
+          'INSERT INTO qa_pairs (session_id, question, answer) VALUES (?, ?, ?)',
+          [sessionId, qa.question, qa.answer]
+        );
+      }
+    }
+
+    // Insert extracted content if exists
+    if (extractedContent) {
+      const types = Object.keys(extractedContent);
+      for (const type of types) {
+        if (extractedContent[type]) {
+          await runAsync(
+            'INSERT OR REPLACE INTO extracted_content (session_id, content_type, content) VALUES (?, ?, ?)',
+            [sessionId, type, extractedContent[type]]
+          );
+        }
+      }
+    }
+
+    // Insert highlights if exist
+    if (highlights) {
+      await runAsync(
+        'INSERT OR REPLACE INTO highlights (session_id, content) VALUES (?, ?)',
+        [sessionId, highlights]
+      );
+    }
+
+    // Commit transaction
+    await runAsync('COMMIT');
+    
+    res.json({ success: true, message: 'Session saved successfully' });
+
+  } catch (error) {
+    // Rollback on error
+    await new Promise((resolve) => {
+      db.run('ROLLBACK', resolve);
+    });
+    res.status(500).json({ error: 'Failed to save session: ' + error.message });
+  } finally {
+    db.close();
   }
 });
 
@@ -450,6 +538,56 @@ app.get('/api/get-user/:uid', (req, res) => {
 
     res.json(row);
   });
+});
+
+// Get complete session data by title
+app.get('/api/get-session/:title', async (req, res) => {
+  const { title } = req.params;
+  const db = new sqlite3.Database('./users.db');
+
+  try {
+    const session = await db.get('SELECT * FROM sessions WHERE title = ?', [title]);
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    const transcription = await db.get(
+      'SELECT content FROM transcriptions WHERE session_id = ?', 
+      [session.session_id]
+    );
+
+    const qaData = await db.all(
+      'SELECT question, answer FROM qa_pairs WHERE session_id = ?',
+      [session.session_id]
+    );
+
+    const extractedContent = await db.all(
+      'SELECT content_type, content FROM extracted_content WHERE session_id = ?',
+      [session.session_id]
+    );
+
+    const highlights = await db.get(
+      'SELECT content FROM highlights WHERE session_id = ?',
+      [session.session_id]
+    );
+
+    res.json({
+      ...session,
+      transcription: transcription?.content,
+      qaData,
+      extractedContent: extractedContent.reduce((acc, item) => {
+        acc[item.content_type] = item.content;
+        return acc;
+      }, {}),
+      highlights: highlights?.content
+    });
+
+  } catch (error) {
+    console.error('Error fetching session:', error);
+    res.status(500).json({ error: 'Failed to fetch session' });
+  } finally {
+    db.close();
+  }
 });
 
 // Start the server

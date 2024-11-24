@@ -1,66 +1,88 @@
-Run the development servers:
+# Adaptive Meeting Insight Dashboard
+The Adaptive Meeting Insight Dashboard is a web application that processes meeting recordings to extract key insights such as transcriptions, action items, key decisions, and more. It leverages AI to generate smart highlights and allows users to interact with meeting data through Q&A and other features.
 
-```bashCopy# 
-Terminal 1 - Frontend
+## Overview
+This dashboard simplifies meeting analysis by providing users with actionable insights, automated transcription, and an intuitive interface for exploring meeting data. Users can upload recordings, extract key insights, and interact with the data to maximize productivity.
+
+## Key Features
+- Upload Meeting Recordings: Drag-and-drop or browse files to upload meeting recordings.
+- Automated Transcriptions: Generate accurate transcriptions from uploaded videos.
+- Smart Highlights: Automatically extract actionable items, key decisions, and questions from the transcription.
+- Interactive Q&A: Ask specific questions based on the transcription and receive precise answers.
+- Dynamic Title Generation: Generate a meaningful title for each meeting session automatically.
+- Session Management: Save, edit, and navigate through previously analyzed sessions.
+
+## Why Choose Our App?
+- Time-Saving: Automatically extract critical information from meeting recordings, reducing manual effort.
+
+- Enhanced Collaboration: Share summaries, action items, and decisions with your team for better alignment.
+
+- Accurate Insights: Advanced AI ensures precise transcription and context-aware analysis.
+
+- User-Friendly Interface: Intuitive design for easy navigation, even for non-technical users.
+
+- Customizable Workflow: Tailor the dashboard to your specific workflow requirements.
+
+- Secure Environment: Built with robust authentication and secure data handling practices.
+
+Our app goes beyond transcription by offering actionable insights to streamline your team's productivity and decision-making processes.
+
+## Getting Started
+Follow the instructions below to set up the project on your local machine.
+
+## Prerequisites
+- Node.js and npm installed on your machine.
+- Backend server running to process APIs.
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/sridurgeshv/meeting-insights.git
+cd meeting-insights
+```
+
+### Frontend Setup
+
+- Set up the frontend:
+```bash
 cd frontend
+npm install
+```
+
+### Backend Setup
+
+- Set up the backend:
+```bash
+cd backend
+npm install
+```
+
+4. Start the development server:
+```bash
 npm start
 ```
 
-```# Terminal 2 - Backend
-cd backend
+5. Run the backend server (ensure the necessary API endpoints are available):
+```bash
 npm run dev
 ```
 
-Works to finish :
+## Usage
 
-1. UI Correction
+1. Open the application in your browser:
+```bash
+http://localhost:3000
+```
 
-2. Text-to-Image part
+2. Upload a meeting recording and wait for transcription.
 
-3. New Features
+3. Explore the extracted highlights, interact with the transcription using Q&A, and save the session for future reference.
 
+## License
+This project is licensed under the MIT License. See the LICENSE file for details.
 
-## Dashboard Ideas
+## Contact
+For questions or collaboration, please reach out:
 
-That sounds like an exciting project! Here are some features you could add to your dashboard page to make it more attractive and user-friendly:
-
-1. Recent Sessions Overview \
-Description: Display a list of recent sessions with key details like session name, date, and status (completed, in progress).
-Benefit: Allows users to quickly access and review their recent activities.
-
-2. Search and Filter Options \
-Description: Add a search bar and filters (e.g., by date, status, keywords) to help users find specific sessions easily.
-Benefit: Enhances user experience by making navigation more efficient.
-
-3. Statistics and Analytics \
-Description: Show visual analytics such as the number of sessions created, average transcription length, and most common keywords.
-Benefit: Provides users with insights into their usage patterns and data trends.
-
-4. User Profile and Settings \
-Description: Include a section for users to update their profile information, change settings, and manage preferences.
-Benefit: Personalizes the user experience and allows for customization.
-
-5. Notifications and Alerts \
-Description: Implement a notification system to alert users about completed transcriptions, errors, or important updates.
-Benefit: Keeps users informed and engaged with real-time updates. 
-
-6. Help and Support \
-Description: Add a help section with FAQs, tutorials, and contact support options.
-Benefit: Provides users with resources to troubleshoot issues and learn how to use the application effectively.
-
-7. Session Templates \
-Description: Allow users to create and save session templates for frequently used settings and configurations.
-Benefit: Saves time and ensures consistency across similar sessions.
-
-8. Customizable Dashboard Widgets \
-Description: Let users customize their dashboard with widgets that display information relevant to them, such as recent activity, favorite sessions, or quick links.
-Benefit: Enhances user engagement by allowing personalization of the dashboard.
-
-9. Integration with Calendar \
-Description: Integrate with calendar applications to schedule and manage sessions directly from the dashboard.
-Benefit: Streamlines workflow and helps users keep track of their sessions.
-
-10. Feedback and Ratings \
-Description: Include a feature for users to rate their sessions and provide feedback.
-Benefit: Collects valuable user input to improve the application and user satisfaction.
-Implementing these features can significantly enhance the functionality and user experience of your dashboard page. Which of these ideas do you think would be most beneficial for your application?
+- Email: ritikasrivastava456@gmail.com
