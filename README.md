@@ -38,9 +38,9 @@ Follow the instructions below to set up the project on your local machine.
 
   For linux or ubuntu based system run these commands
   
-sudo apt update
+- sudo apt update
 
-sudo apt install ffmpeg
+- sudo apt install ffmpeg
 
 ##  API Key Setup
 
