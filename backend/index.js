@@ -540,55 +540,161 @@ app.get('/api/get-user/:uid', (req, res) => {
   });
 });
 
-// Get complete session data by title
 app.get('/api/get-session/:title', async (req, res) => {
   const { title } = req.params;
   const db = new sqlite3.Database('./users.db');
-
+  
   try {
     const session = await db.get('SELECT * FROM sessions WHERE title = ?', [title]);
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
     }
 
+    // Get transcription with null check
     const transcription = await db.get(
       'SELECT content FROM transcriptions WHERE session_id = ?', 
       [session.session_id]
     );
 
+    // Get QA data with empty array fallback
     const qaData = await db.all(
       'SELECT question, answer FROM qa_pairs WHERE session_id = ?',
       [session.session_id]
-    );
+    ) || [];
 
+    // Get extracted content with proper null handling
     const extractedContent = await db.all(
       'SELECT content_type, content FROM extracted_content WHERE session_id = ?',
       [session.session_id]
     );
 
+    // Get highlights with null check
     const highlights = await db.get(
       'SELECT content FROM highlights WHERE session_id = ?',
       [session.session_id]
     );
 
-    res.json({
-      ...session,
-      transcription: transcription?.content,
-      qaData,
-      extractedContent: extractedContent.reduce((acc, item) => {
-        acc[item.content_type] = item.content;
+    // Process extracted content safely
+    let processedExtractedContent = {};
+    if (Array.isArray(extractedContent) && extractedContent.length > 0) {
+      processedExtractedContent = extractedContent.reduce((acc, item) => {
+        if (item && item.content_type && item.content) {
+          acc[item.content_type] = item.content;
+        }
         return acc;
-      }, {}),
-      highlights: highlights?.content
-    });
+      }, {});
+    }
+
+    // Construct the response object with null checks
+    const responseData = {
+      ...session,
+      transcription: transcription?.content || null,
+      qaData: qaData || [],
+      extractedContent: processedExtractedContent,
+      highlights: highlights?.content || null
+    };
+
+    res.json(responseData);
 
   } catch (error) {
     console.error('Error fetching session:', error);
-    res.status(500).json({ error: 'Failed to fetch session' });
+    res.status(500).json({ 
+      error: 'Failed to fetch session',
+      details: error.message 
+    });
   } finally {
     db.close();
   }
 });
+
+app.get('/api/get-sessions', async (req, res) => {
+  const db = new sqlite3.Database('./users.db');
+
+  try {
+    // Fetch all sessions
+    const sessions = await new Promise((resolve, reject) => {
+      db.all('SELECT * FROM sessions', (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+
+    if (!sessions.length) {
+      return res.status(404).json({ error: 'No sessions found' });
+    }
+
+    // Fetch related data for each session
+    const sessionsWithDetails = await Promise.all(
+      sessions.map(async (session) => {
+        const transcription = await new Promise((resolve, reject) => {
+          db.get(
+            'SELECT content FROM transcriptions WHERE session_id = ?',
+            [session.session_id],
+            (err, row) => {
+              if (err) reject(err);
+              else resolve(row ? row.content : null);
+            }
+          );
+        });
+
+        const qaData = await new Promise((resolve, reject) => {
+          db.all(
+            'SELECT question, answer FROM qa_pairs WHERE session_id = ?',
+            [session.session_id],
+            (err, rows) => {
+              if (err) reject(err);
+              else resolve(rows);
+            }
+          );
+        });
+
+        const extractedContent = await new Promise((resolve, reject) => {
+          db.all(
+            'SELECT content_type, content FROM extracted_content WHERE session_id = ?',
+            [session.session_id],
+            (err, rows) => {
+              if (err) reject(err);
+              else {
+                const contentMap = rows.reduce((acc, item) => {
+                  acc[item.content_type] = item.content;
+                  return acc;
+                }, {});
+                resolve(contentMap);
+              }
+            }
+          );
+        });
+
+        const highlights = await new Promise((resolve, reject) => {
+          db.get(
+            'SELECT content FROM highlights WHERE session_id = ?',
+            [session.session_id],
+            (err, row) => {
+              if (err) reject(err);
+              else resolve(row ? row.content : null);
+            }
+          );
+        });
+
+        return {
+          ...session,
+          transcription,
+          qaData,
+          extractedContent,
+          highlights,
+        };
+      })
+    );
+
+    res.json(sessionsWithDetails);
+  } catch (error) {
+    console.error('Error fetching sessions:', error);
+    res.status(500).json({ error: 'Failed to fetch sessions' });
+  } finally {
+    db.close();
+  }
+});
+
 
 // Start the server
 const PORT = process.env.PORT || 5000;
