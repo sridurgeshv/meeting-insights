@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { io } from 'socket.io-client'; 
@@ -22,10 +22,12 @@ const Dashboard = () => {
   const [isAddLinkOpen, setIsAddLinkOpen] = useState(false);
   const [newLink, setNewLink] = useState({ name: '', url: '' });
   const [hoveredLinkIndex, setHoveredLinkIndex] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
       socket.emit('join', { userId: user.uid });
+      fetchSessions();
     }
 
     socket.on('user-update', (updatedUser) => {
@@ -42,6 +44,52 @@ const Dashboard = () => {
       socket.off('user-update');
     };
   }, [user, setUser]);
+
+  const fetchSessions = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const savedSessions = JSON.parse(localStorage.getItem('savedSession')) || [];
+      const recentSessions = savedSessions.slice(-5); // Only get the last 5 sessions
+      
+      const sessionsWithData = await Promise.all(
+        recentSessions.map(async (session) => {
+          try {
+            const response = await axios.get(`http://localhost:5000/api/get-session/${encodeURIComponent(session.title)}`);
+            return {
+              ...session,
+              ...response.data,
+              extractedContent: response.data.extractedContent || {},
+              qaData: response.data.qaData || [],
+              transcription: response.data.transcription || null,
+              highlights: response.data.highlights || null
+            };
+          } catch (error) {
+            console.error(`Error fetching session ${session.title}:`, error);
+            return session;
+          }
+        })
+      );
+      setSessions(sessionsWithData.reverse()); // Show newest first
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      setSessions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleSessionClick = async (session) => {
+    try {
+      const response = await axios.get(`/api/get-session/${session.title}`);
+      if (response.data) {
+        navigate(`/session/${session.title}`, { 
+          state: { sessionData: response.data }
+        });
+      }
+    } catch (error) {
+      console.error('Error navigating to session:', error);
+    }
+  };
 
   const handleSaveLink = () => {
     if (newLink.name && newLink.url) {
@@ -71,12 +119,8 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  const handlesessionClick = (sessionId) => {
-    navigate(`/session/${sessionId}`);
-  };
-
-  const handleDeleteSession = (sessionsId) => {
-    const updatedSessions = sessions.filter(sessions => sessions.id !== sessionsId);
+  const handleDeleteSession = (sessionId) => {
+    const updatedSessions = sessions.filter(session => session.id !== sessionId);
     setSessions(updatedSessions);
     localStorage.setItem('savedSession', JSON.stringify(updatedSessions));
   };
@@ -93,14 +137,12 @@ const Dashboard = () => {
   const handleCreateSession = () => {
     const newSession = {
       id: Date.now().toString(),
-      title: 'New Session',
+      title: `Session ${sessions.length + 1}`,
       language: 'en',
       lastEdited: new Date().toISOString(),
     };
   
-    const savedSessions = JSON.parse(localStorage.getItem('savedSession')) || [];
-    const updatedSessions = [...savedSessions, newSession];
-    
+    const updatedSessions = [...sessions, newSession];
     setSessions(updatedSessions);
     localStorage.setItem('savedSession', JSON.stringify(updatedSessions));
     navigate(`/session/${newSession.id}`);
@@ -119,13 +161,13 @@ const Dashboard = () => {
               />
               <span className="hi-text">Hi,</span>
             </div>
-              <span className="username">{user?.displayName?.split(' ').slice(0, 2).join(' ')}</span>
+            <span className="username">{user?.displayName?.split(' ').slice(0, 2).join(' ')}</span>
           </div>
           
           <nav className="menu">
             <ul>
               <li onClick={() => navigate('/dashboard')}>Dashboard</li>
-              <li onClick={() => navigate('/projects')}>Sessions</li>
+              <li onClick={() => navigate('/sessions')}>Sessions</li>
               <li onClick={() => navigate('/settings')}>Settings</li>
             </ul>
           </nav>
@@ -151,13 +193,22 @@ const Dashboard = () => {
             </div>
             <div className="divider"></div>
             <div className="sessions-content">
-              {sessions.length === 0 ? (
+              {isLoading ? (
+                <div className="loading-message">Loading sessions...</div>
+              ) : sessions.length === 0 ? (
                 <div className="empty-message">No sessions yet</div>
               ) : (
                 <div className="sessions-list">
                   {sessions.map(session => (
-                    <div key={session.id} className="session-item">
-                      {session.title}
+                    <div 
+                      key={session.id} 
+                      className="session-item"
+                      onClick={() => handleSessionClick(session)}
+                    >
+                      <span className="session-title">{session.title}</span>
+                      <span className="session-date">
+                        {new Date(session.lastEdited).toLocaleDateString()}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -165,8 +216,9 @@ const Dashboard = () => {
             </div>
           </div>
 
-        {/* Statistics Section */}
-        <div className="content-card statistics-card">
+          
+          {/* Statistics card */}
+          <div className="content-card statistics-card">
             <div className="section-header">
               <h2 className="section-title">Statistics</h2>
             </div>
@@ -175,6 +227,7 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Quick Links card */}
         <div className="content-card quick-links-card">
           <div className="section-header">
             <h2 className="section-title">Quick Links</h2>
@@ -188,12 +241,12 @@ const Dashboard = () => {
               <div className="links-list">
                 {quickLinks.map((link, index) => (
                   <div
-                  key={index}
-                  className="link-item-wrapper"
-                  onMouseEnter={() => setHoveredLinkIndex(index)}
-                  onMouseLeave={() => setHoveredLinkIndex(null)}
-                >
-                 <a
+                    key={index}
+                    className="link-item-wrapper"
+                    onMouseEnter={() => setHoveredLinkIndex(index)}
+                    onMouseLeave={() => setHoveredLinkIndex(null)}
+                  >
+                    <a
                       href={link.url}
                       className="link-item"
                       target="_blank"
@@ -211,16 +264,16 @@ const Dashboard = () => {
                       >
                         <X size={20} />
                       </button>
-                )}
-                </div>
-              ))}
-            </div>
-          )}
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-         {/* Modal */}
-         {isAddLinkOpen && (
+        {/* Modal */}
+        {isAddLinkOpen && (
           <div className="modal-backdrop">
             <div className="modal-container">
               <div className="modal-content">
