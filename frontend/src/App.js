@@ -6,6 +6,7 @@ import SignIn from './Components/Signin';
 import Dashboard from './Components/Dashboard';
 import Session from './pages/session';
 import Settings from './Components/Settings';
+import SessionList from './pages/Sessiondetails';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -25,6 +26,7 @@ function App() {
           <Route path="/" element={<Welcome />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/sessions" element={<SessionList />} />
           <Route 
             path="/dashboard" 
             element={
