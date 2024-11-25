@@ -95,4 +95,4 @@ For questions, feedback, or support, please contact us:
 - Project Repository: https://github.com/sridurgeshv/meeting-insights
   
 ## Video Demo
-For a comprehensive overview of the application's features and functionality, please watch our [video demonstration](). This walkthrough provides detailed guidance on effectively using and navigating Insightsync.
+For a comprehensive overview of the application's features and functionality, please watch our [video demonstration](https://youtu.be/LVMy0CFo3Tw). This walkthrough provides detailed guidance on effectively using and navigating Insightsync.
