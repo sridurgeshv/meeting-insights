@@ -16,7 +16,7 @@ const socket = io(process.env.REACT_APP_SOCKET_URL, {
 const Dashboard = () => {
   const { user, setUser, logout } = useAuth();
   const navigate = useNavigate();
-  const [sessions, setSessions] = useState([]);
+  const [dashboardSessions, setDashboardSessions] = useState([]);
   const [collaborations, setCollaborations] = useState([]);
   const [quickLinks, setQuickLinks] = useState([]);
   const [isAddLinkOpen, setIsAddLinkOpen] = useState(false);
@@ -27,7 +27,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       socket.emit('join', { userId: user.uid });
-      fetchSessions();
+      fetchDashboardSessions();
     }
 
     socket.on('user-update', (updatedUser) => {
@@ -45,49 +45,29 @@ const Dashboard = () => {
     };
   }, [user, setUser]);
 
-  const fetchSessions = useCallback(async () => {
+  const fetchDashboardSessions = useCallback(async () => {
     setIsLoading(true);
     try {
-      const savedSessions = JSON.parse(localStorage.getItem('savedSession')) || [];
-      const recentSessions = savedSessions.slice(-5); // Only get the last 5 sessions
-      
-      const sessionsWithData = await Promise.all(
-        recentSessions.map(async (session) => {
-          try {
-            const response = await axios.get(`http://localhost:5000/api/get-session/${encodeURIComponent(session.title)}`);
-            return {
-              ...session,
-              ...response.data,
-              extractedContent: response.data.extractedContent || {},
-              qaData: response.data.qaData || [],
-              transcription: response.data.transcription || null,
-              highlights: response.data.highlights || null
-            };
-          } catch (error) {
-            console.error(`Error fetching session ${session.title}:`, error);
-            return session;
-          }
-        })
-      );
-      setSessions(sessionsWithData.reverse()); // Show newest first
+      const response = await axios.get('http://localhost:5000/api/get-sessions');
+      setDashboardSessions(response.data.reverse());
     } catch (error) {
-      console.error('Error fetching sessions:', error);
-      setSessions([]);
+      console.error('Error fetching dashboard sessions:', error);
+      setDashboardSessions([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const handleSessionClick = async (session) => {
+  const handleDashboardSessionClick = async (dashboardSession) => {
     try {
-      const response = await axios.get(`/api/get-session/${session.title}`);
+      const response = await axios.get(`/api/get-session/${encodeURIComponent(dashboardSession.title)}`);
       if (response.data) {
-        navigate(`/session/${session.title}`, { 
-          state: { sessionData: response.data }
+        navigate(`/dashboard-session/${dashboardSession.title}`, { 
+          state: { dashboardSessionData: response.data }
         });
       }
     } catch (error) {
-      console.error('Error navigating to session:', error);
+      console.error('Error navigating to dashboard session:', error);
     }
   };
 
@@ -119,10 +99,24 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  const handleDeleteSession = (sessionId) => {
-    const updatedSessions = sessions.filter(session => session.id !== sessionId);
-    setSessions(updatedSessions);
-    localStorage.setItem('savedSession', JSON.stringify(updatedSessions));
+  const handleDeleteDashboardSession = (dashboardSessionId) => {
+    const updatedDashboardSessions = dashboardSessions.filter(dashboardSession => dashboardSession.id !== dashboardSessionId);
+    setDashboardSessions(updatedDashboardSessions);
+    localStorage.setItem('savedDashboardSession', JSON.stringify(updatedDashboardSessions));
+  };
+
+  const handleCreateDashboardSession = () => {
+    const newDashboardSession = {
+      id: Date.now().toString(),
+      title: `Dashboard Session ${dashboardSessions.length + 1}`,
+      language: 'en',
+      lastEdited: new Date().toISOString(),
+    };
+  
+    const updatedDashboardSessions = [...dashboardSessions, newDashboardSession];
+    setDashboardSessions(updatedDashboardSessions);
+    localStorage.setItem('savedDashboardSession', JSON.stringify(updatedDashboardSessions));
+    navigate(`/dashboard-session/${newDashboardSession.id}`);
   };
 
   const handleLogout = async () => {
@@ -132,20 +126,6 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Failed to log out:', error);
     }
-  };
-
-  const handleCreateSession = () => {
-    const newSession = {
-      id: Date.now().toString(),
-      title: `Session ${sessions.length + 1}`,
-      language: 'en',
-      lastEdited: new Date().toISOString(),
-    };
-  
-    const updatedSessions = [...sessions, newSession];
-    setSessions(updatedSessions);
-    localStorage.setItem('savedSession', JSON.stringify(updatedSessions));
-    navigate(`/session/${newSession.id}`);
   };
 
   return (
@@ -186,37 +166,35 @@ const Dashboard = () => {
         </div>
 
         <div className="upper-grid">
-          <div className="content-card sessions-card">
+          <div className="content-card dashboard-sessions-card">
             <div className="section-header">
               <h2 className="section-title">Sessions</h2>
-              <button className="add-button" onClick={handleCreateSession}>+</button>
+              <button className="add-button" onClick={handleCreateDashboardSession}>+</button>
             </div>
             <div className="divider"></div>
-            <div className="sessions-content">
+             <div className="dashboard-sessions-content">
               {isLoading ? (
                 <div className="loading-message">Loading sessions...</div>
-              ) : sessions.length === 0 ? (
+              ) : dashboardSessions.length === 0 ? (
                 <div className="empty-message">No sessions yet</div>
               ) : (
-                <div className="sessions-list">
-                  {sessions.map(session => (
-                    <div 
-                      key={session.id} 
-                      className="session-item"
-                      onClick={() => handleSessionClick(session)}
+                <ul className="dashboard-sessions-list">
+                  {dashboardSessions.map(dashboardSession => (
+                    <li 
+                      key={dashboardSession.session_id} 
+                      className="dashboard-session-item" 
+                      onClick={() => handleDashboardSessionClick(dashboardSession)}
                     >
-                      <span className="session-title">{session.title}</span>
-                      <span className="session-date">
-                        {new Date(session.lastEdited).toLocaleDateString()}
-                      </span>
-                    </div>
+                      <div className="dashboard-session-info">
+                        <h3 className="dashboard-session-title">{dashboardSession.title}</h3>
+                      </div>
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
-            </div>
+             </div>
           </div>
 
-          
           {/* Statistics card */}
           <div className="content-card statistics-card">
             <div className="section-header">

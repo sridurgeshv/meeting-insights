@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../globals/s1.css';
+import '../globals/sd.css';
 
 const SessionList = () => {
   const navigate = useNavigate();
